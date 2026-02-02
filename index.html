@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Training Tracker</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 20px;
+      background: #f2f2f7;
+    }
+    h1 { text-align: center; }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 6px 0;
+      font-size: 16px;
+    }
+    button {
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+    }
+    .entry {
+      background: white;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🏋️ Training Tracker</h1>
+
+<input id="training" placeholder="Training (z. B. Push Day)">
+<input id="gewicht" type="number" placeholder="Gewicht (kg)">
+<input id="zeit" type="number" placeholder="Zeit (Minuten)">
+
+<button onclick="saveEntry()">Speichern</button>
+
+<div id="list"></div>
+
+<script>
+  const list = document.getElementById("list");
+  let entries = JSON.parse(localStorage.getItem("entries")) || [];
+
+  function saveEntry() {
+    const training = trainingInput.value;
+    const gewicht = gewichtInput.value;
+    const zeit = zeitInput.value;
+
+    if (!training || !gewicht || !zeit) return;
+
+    entries.push({
+      training,
+      gewicht,
+      zeit,
+      date: new Date().toLocaleDateString()
+    });
+
+    localStorage.setItem("entries", JSON.stringify(entries));
+    render();
+  }
+
+  function render() {
+    list.innerHTML = "";
+    entries.slice().reverse().forEach(e => {
+      list.innerHTML += `
+        <div class="entry">
+          <strong>${e.training}</strong><br>
+          ⚖️ ${e.gewicht} kg · ⏱️ ${e.zeit} min<br>
+          📅 ${e.date}
+        </div>`;
+    });
+  }
+
+  render();
+</script>
+
+</body>
+</html>
