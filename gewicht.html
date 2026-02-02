@@ -2,16 +2,114 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Gewicht</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <title>Gewicht</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 20px;
+      background: #f2f2f7;
+      text-align: center;
+    }
+    input, button {
+      width: 80%;
+      padding: 12px;
+      margin: 10px auto;
+      font-size: 18px;
+      display: block;
+      border-radius: 8px;
+      border: none;
+    }
+    button {
+      background: #007aff;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
 <h1>Gewicht</h1>
-<p>Hier kommt später das Gewicht-Tracking</p>
 
-<a href="index.html"><button>⬅ Zurück</button></a>
+<input id="gewichtInput" type="number" placeholder="Gewicht in kg">
+<button onclick="saveWeight()">Speichern</button>
+
+<h2>Verlauf</h2>
+<div id="history"></div>
+
+<hr>
+
+<h2>Backup</h2>
+<button onclick="exportWeights()">Exportieren</button>
+<input type="file" id="importFile">
+<button onclick="importWeights()">Importieren</button>
+
+<script>
+  // ---------------------------
+  // Daten speichern & anzeigen
+  // ---------------------------
+  function saveWeight() {
+    const gewicht = document.getElementById("gewichtInput").value;
+    if (!gewicht) return;
+
+    let weights = JSON.parse(localStorage.getItem("weights")) || [];
+    weights.push({ value: gewicht, date: new Date().toLocaleDateString() });
+    localStorage.setItem("weights", JSON.stringify(weights));
+    document.getElementById("gewichtInput").value = "";
+    renderWeights();
+  }
+
+  function renderWeights() {
+    const history = document.getElementById("history");
+    let weights = JSON.parse(localStorage.getItem("weights")) || [];
+    history.innerHTML = "";
+
+    weights.slice().reverse().forEach(w => {
+      history.innerHTML += `<p>⚖️ ${w.value} kg – 📅 ${w.date}</p>`;
+    });
+  }
+
+  renderWeights();
+
+  // ---------------------------
+  // Exportieren
+  // ---------------------------
+  function exportWeights() {
+    const data = localStorage.getItem("weights") || "[]";
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "gewicht_backup.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------------------------
+  // Importieren
+  // ---------------------------
+  function importWeights() {
+    const fileInput = document.getElementById("importFile");
+    if (!fileInput.files.length) return alert("Bitte Datei auswählen!");
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!Array.isArray(data)) throw "Ungültiges Format";
+
+        localStorage.setItem("weights", JSON.stringify(data));
+        renderWeights();
+        alert("Import erfolgreich!");
+      } catch(err) {
+        alert("Fehler beim Import: " + err);
+      }
+    };
+    reader.readAsText(file);
+  }
+</script>
 
 </body>
 </html>
