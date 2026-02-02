@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Gewicht</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-  <!-- Chart.js einbinden -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gewicht</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
 <h1>Gewicht</h1>
 
+<input type="number" id="gewichtInput" placeholder="Gewicht in kg">
+<button onclick="saveWeight()">Speichern</button>
+
 <canvas id="weightChart" width="400" height="200"></canvas>
 
-<div style="margin-top:10px;">
+<div>
   <button onclick="setView('month')">Monat</button>
   <button onclick="setView('year')">Jahr</button>
 </div>
@@ -22,74 +24,89 @@
 <a href="index.html"><button>⬅ Zurück</button></a>
 
 <script>
-  let view = 'month'; // Startansicht
-  let chart;
+let view = 'month';
+let chart;
 
-  function getWeights() {
-    return JSON.parse(localStorage.getItem("weights")) || [];
+function getWeights(){
+  return JSON.parse(localStorage.getItem('weights')) || [];
+}
+
+function saveWeight(){
+  const w = document.getElementById('gewichtInput').value;
+  if(!w) return alert('Bitte Gewicht eingeben');
+  const today = new Date().toISOString().split('T')[0];
+  let weights = getWeights();
+
+  // Prüfen ob schon heute
+  if(weights.some(e=>e.date===today)){
+    return alert('Heute schon Gewicht gespeichert');
   }
 
-  function setView(v) {
-    view = v;
-    renderChart();
-  }
+  weights.push({value: parseFloat(w), date: today});
+  localStorage.setItem('weights', JSON.stringify(weights));
+  document.getElementById('gewichtInput').value='';
+  renderChart();
+}
 
-  function renderChart() {
-    const weights = getWeights();
-    if (!weights.length) return;
+function setView(v){
+  view = v;
+  renderChart();
+}
 
-    // Daten filtern je nach Ansicht
-    let labels = [], data = [];
-    const now = new Date();
+function renderChart(){
+  const weights = getWeights();
+  if(weights.length===0) return;
 
-    if (view === 'month') {
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
-      weights.forEach(w => {
-        const d = new Date(w.date);
-        if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-          labels.push(w.date);
-          data.push(w.value);
-        }
-      });
-    } else {
-      // Jahr
-      const currentYear = now.getFullYear();
-      weights.forEach(w => {
-        const d = new Date(w.date);
-        if (d.getFullYear() === currentYear) {
-          labels.push(w.date);
-          data.push(w.value);
-        }
-      });
-    }
-
-    if (chart) chart.destroy();
-
-    const ctx = document.getElementById('weightChart').getContext('2d');
-    chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Gewicht (kg)',
-          data: data,
-          borderColor: '#007aff',
-          backgroundColor: 'rgba(0,122,255,0.2)',
-          tension: 0.3,
-          fill: true
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: { y: { beginAtZero: false } }
+  let labels=[], data=[];
+  const now = new Date();
+  if(view==='month'){
+    const month = now.getMonth();
+    const year = now.getFullYear();
+    weights.forEach(w=>{
+      const d = new Date(w.date);
+      if(d.getMonth()===month && d.getFullYear()===year){
+        labels.push(w.date);
+        data.push(w.value);
+      }
+    });
+  }else{
+    const year = now.getFullYear();
+    weights.forEach(w=>{
+      const d = new Date(w.date);
+      if(d.getFullYear()===year){
+        labels.push(w.date);
+        data.push(w.value);
       }
     });
   }
 
-  renderChart();
+  if(chart) chart.destroy();
+
+  const ctx = document.getElementById('weightChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[{
+        label:'Gewicht (kg)',
+        data:data,
+        borderColor:'#007aff',
+        backgroundColor:'rgba(0,122,255,0.2)',
+        tension:0.3,
+        fill:true
+      }]
+    },
+    options:{
+      responsive:true,
+      scales:{y:{beginAtZero:false}}
+    }
+  });
+}
+
+renderChart();
 </script>
 
 </body>
 </html>
+
 
