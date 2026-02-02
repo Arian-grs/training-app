@@ -1,24 +1,137 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Training</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Training</title>
+<link rel="stylesheet" href="style.css">
+<script src="chart.js"></script>
 </head>
 <body>
 
 <h1>Training</h1>
 
-<button>Push</button>
-<button>Pull</button>
-<button>Legs</button>
-<button>Arme</button>
-<button>Torso</button>
-<button>Cardio</button>
-<button>Frei</button>
+<div id="trainingMenu">
+  <button onclick="showSplit('Push')">Push</button>
+  <button onclick="showSplit('Pull')">Pull</button>
+  <button onclick="showSplit('Legs')">Legs</button>
+  <button onclick="showSplit('Arme')">Arme</button>
+  <button onclick="showSplit('Torso')">Torso</button>
+  <button onclick="showSplit('Cardio')">Cardio</button>
+  <button onclick="showSplit('Free')">Free</button>
+</div>
+
+<div id="splitMenu"></div>
 
 <a href="index.html"><button>⬅ Zurück</button></a>
 
+<script>
+const splits = {
+  "Push": {
+    "Brust": ["Bankdrücken","Schrägbankdrücken","Brustpresse","Schrägbankdrücken Kurzhanteln","Butterfly"],
+    "Trizeps": ["Rope Pulldown","One Arm Pulldown"],
+    "Schultern": ["Seitheben Kabelzug","Schulterdrücken","Seitheben","Reverse Butterfly"]
+  },
+  "Pull": {
+    "Rücken": ["Latziehen","Ruderzug","t_Bar","Rudermaschine"],
+    "Bizeps": ["Bizepscurlrs","Hammercurles","Bizepsmaschine"]
+  },
+  "Legs": {
+    "Beine": ["Hacksmith","Wadenmaschine","Beinbeuger","Beinstrecker"]
+  },
+  "Arme": {
+    "Trizeps": ["Rope Pulldown","One Arm Pulldown"],
+    "Bizeps": ["Bizepscurlrs","Hammercurles","Bizepsmaschine"],
+    "Schultern": ["Seitheben Kabelzug","Schulterdrücken","Seitheben","Reverse Butterfly"]
+  },
+  "Torso": {
+    "Brust": ["Bankdrücken","Schrägbankdrücken","Brustpresse","Schrägbankdrücken Kurzhanteln","Butterfly"],
+    "Rücken": ["Latziehen","Ruderzug","t_Bar","Rudermaschine"]
+  },
+  "Cardio": {
+    "Geräte": ["Laufband","Fahrrad","Stairmaster"]
+  },
+  "Free": {
+    "Brust": ["Bankdrücken","Schrägbankdrücken","Brustpresse","Schrägbankdrücken Kurzhanteln","Butterfly"],
+    "Rücken": ["Latziehen","Ruderzug","t_Bar","Rudermaschine"],
+    "Bizeps": ["Bizepscurlrs","Hammercurles","Bizepsmaschine"],
+    "Trizeps": ["Rope Pulldown","One Arm Pulldown"],
+    "Schultern": ["Seitheben Kabelzug","Schulterdrücken","Seitheben","Reverse Butterfly"],
+    "Legs": ["Hacksmith","Wadenmaschine","Beinbeuger","Beinstrecker"]
+  }
+};
+
+function showSplit(splitName){
+  const menu = document.getElementById('splitMenu');
+  menu.innerHTML = '';
+  const split = splits[splitName];
+  for(let group in split){
+    const h3 = document.createElement('h3');
+    h3.textContent = group;
+    menu.appendChild(h3);
+    split[group].forEach(ex => {
+      const btn = document.createElement('button');
+      btn.textContent = ex;
+      btn.onclick = ()=>startExercise(splitName, group, ex);
+      menu.appendChild(btn);
+    });
+  }
+}
+
+function startExercise(split, group, exercise){
+  // Übungs-Logik
+  const lastWeight = getLastWeight(exercise);
+  const w = prompt(`Übung: ${exercise}\nGewicht eingeben (Vorschlag: ${lastWeight || ''} kg):`);
+  if(!w) return;
+  const reps = prompt('Wiederholungen:');
+  if(!reps) return;
+
+  saveExercise(exercise, parseFloat(w), parseInt(reps));
+
+  // 2 Minuten Pause-Timer
+  startPauseTimer(2*60);
+}
+
+function getLastWeight(ex){
+  const data = JSON.parse(localStorage.getItem('training')) || [];
+  const exData = data.filter(e=>e.exercise===ex);
+  if(exData.length===0) return null;
+  return exData[exData.length-1].weight;
+}
+
+function saveExercise(ex, weight, reps){
+  let data = JSON.parse(localStorage.getItem('training')) || [];
+  data.push({exercise: ex, weight: weight, reps: reps, date: new Date().toISOString()});
+  localStorage.setItem('training', JSON.stringify(data));
+}
+
+function startPauseTimer(seconds){
+  const existing = document.getElementById('pauseTimer');
+  if(existing) existing.remove();
+
+  const timerDiv = document.createElement('div');
+  timerDiv.id = 'pauseTimer';
+  timerDiv.style.textAlign = 'center';
+  timerDiv.style.margin = '20px';
+  timerDiv.style.fontSize = '20px';
+  document.body.appendChild(timerDiv);
+
+  let remaining = seconds;
+  const interval = setInterval(()=>{
+    let min = Math.floor(remaining/60);
+    let sec = remaining%60;
+    timerDiv.textContent = `Pause: ${min}:${sec<10?'0':''}${sec}`;
+    remaining--;
+    if(remaining<0){
+      clearInterval(interval);
+      timerDiv.textContent = 'Pause beendet 🔔';
+      const audio = new Audio('https://www.soundjay.com/buttons/beep-07.wav');
+      audio.play();
+    }
+  },1000);
+}
+</script>
+
 </body>
 </html>
+
