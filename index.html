@@ -3,82 +3,86 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Training Trrrracker</title>
+  <title>Meine Fitness-App</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       padding: 20px;
       background: #f2f2f7;
+      text-align: center;
     }
-    h1 { text-align: center; }
-    input, button {
-      width: 100%;
-      padding: 12px;
-      margin: 6px 0;
-      font-size: 16px;
+    h1 {
+      margin-bottom: 20px;
     }
     button {
-      background: #007aff;
-      color: white;
+      display: block;
+      width: 80%;
+      margin: 10px auto;
+      padding: 12px;
+      font-size: 18px;
+      border-radius: 8px;
       border: none;
-      border-radius: 8px;
-    }
-    .entry {
-      background: white;
-      padding: 10px;
-      margin-top: 8px;
-      border-radius: 8px;
+      background-color: #007aff;
+      color: white;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-<h1>Training</h1>
+<h1 id="title">Meine Fitness-App</h1>
 
-<button onclick="saveEntry()">Gewicht</button>
-<button onclick="saveEntry()">Training</button>
+<div id="mainMenu">
+  <button onclick="showTraining()">Training</button>
+  <button onclick="showWeight()">Gewicht</button>
+  <button onclick="showSettings()">Einstellungen</button>
+</div>
 
-<div id="list"></div>
+<div id="content"></div>
 
 <script>
-  const list = document.getElementById("list");
-  let entries = JSON.parse(localStorage.getItem("entries")) || [];
+  const title = document.getElementById("title");
+  const mainMenu = document.getElementById("mainMenu");
+  const content = document.getElementById("content");
 
-  function saveEntry() {
-    const training = trainingInput.value;
-    const gewicht = gewichtInput.value;
-    const zeit = zeitInput.value;
-
-    if (!training || !gewicht || !zeit) return;
-
-    entries.push({
-      training,
-      gewicht,
-      zeit,
-      date: new Date().toLocaleDateString()
-    });
-
-    localStorage.setItem("entries", JSON.stringify(entries));
-    render();
+  function showTraining() {
+    title.textContent = "Training";
+    content.innerHTML = `
+      <button>Push</button>
+      <button>Pull</button>
+      <button>Legs</button>
+      <button>Arme</button>
+      <button>Torso</button>
+      <button>Cardio</button>
+      <button>Frei</button>
+      <button onclick="showMainMenu()">Zurück</button>
+    `;
+    mainMenu.style.display = "none";
   }
 
-  function render() {
-    list.innerHTML = "";
-    entries.slice().reverse().forEach(e => {
-      list.innerHTML += `
-        <div class="entry">
-          <strong>${e.training}</strong><br>
-          ⚖️ ${e.gewicht} kg · ⏱️ ${e.zeit} min<br>
-          📅 ${e.date}
-        </div>`;
-    });
+  function showWeight() {
+    title.textContent = "Gewicht";
+    content.innerHTML = "<p>Hier kannst du Gewicht tracken (kommt später)</p><button onclick='showMainMenu()'>Zurück</button>";
+    mainMenu.style.display = "none";
   }
 
-  render();
+  function showSettings() {
+    title.textContent = "Einstellungen";
+    content.innerHTML = "<p>Einstellungen (kommt später)</p><button onclick='showMainMenu()'>Zurück</button>";
+    mainMenu.style.display = "none";
+  }
+
+  function showMainMenu() {
+    title.textContent = "Meine Fitness-App";
+    content.innerHTML = "";
+    mainMenu.style.display = "block";
+  }
 </script>
 
 </body>
 </html>
+
+
 
 
 
