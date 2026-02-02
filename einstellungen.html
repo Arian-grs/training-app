@@ -1,63 +1,86 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Einstellungen</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Einstellungen</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <h1>Einstellungen</h1>
 
-<button onclick="toggleWeightData()">Daten → Gewicht</button>
-<div id="weightData" style="display:none; margin-top:10px;">
-  <button onclick="exportWeights()">Exportieren</button>
-  <input type="file" id="importFile">
-  <button onclick="importWeights()">Importieren</button>
-</div>
+<h3>Daten → Gewicht</h3>
+<button onclick="exportWeights()">Exportieren</button>
+<input type="file" id="importWeightFile">
+<button onclick="importWeights()">Importieren</button>
+
+<h3>Daten → Training</h3>
+<button onclick="exportTraining()">Exportieren</button>
+<input type="file" id="importTrainingFile">
+<button onclick="importTraining()">Importieren</button>
 
 <a href="index.html"><button>⬅ Zurück</button></a>
 
 <script>
-  function toggleWeightData() {
-    const el = document.getElementById("weightData");
-    el.style.display = el.style.display === "none" ? "block" : "none";
-  }
+function exportWeights(){
+  const data = localStorage.getItem('weights') || '[]';
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'gewicht_backup.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
-  function exportWeights() {
-    const data = localStorage.getItem("weights") || "[]";
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
+function importWeights(){
+  const fileInput = document.getElementById('importWeightFile');
+  if(!fileInput.files.length) return alert('Datei auswählen');
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!Array.isArray(data)) throw 'Ungültiges Format';
+      localStorage.setItem('weights', JSON.stringify(data));
+      alert('Import erfolgreich');
+    }catch(err){
+      alert('Fehler: '+err);
+    }
+  };
+  reader.readAsText(file);
+}
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "gewicht_backup.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+function exportTraining(){
+  const data = localStorage.getItem('training') || '[]';
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'training_backup.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
-  function importWeights() {
-    const fileInput = document.getElementById("importFile");
-    if (!fileInput.files.length) return alert("Bitte Datei auswählen!");
-
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        const data = JSON.parse(e.target.result);
-        if (!Array.isArray(data)) throw "Ungültiges Format";
-
-        localStorage.setItem("weights", JSON.stringify(data));
-        alert("Import erfolgreich!");
-      } catch(err) {
-        alert("Fehler beim Import: " + err);
-      }
-    };
-    reader.readAsText(file);
-  }
+function importTraining(){
+  const fileInput = document.getElementById('importTrainingFile');
+  if(!fileInput.files.length) return alert('Datei auswählen');
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!Array.isArray(data)) throw 'Ungültiges Format';
+      localStorage.setItem('training', JSON.stringify(data));
+      alert('Import erfolgreich');
+    }catch(err){
+      alert('Fehler: '+err);
+    }
+  };
+  reader.readAsText(file);
+}
 </script>
 
 </body>
 </html>
-
